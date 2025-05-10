@@ -8,19 +8,22 @@
 import { useRoute } from "vue-router";
 
 const route = useRoute();
-const { acceleration, speed, position } = route.query;
+const { acceleration: accRaw, speed: spdRaw, position: posRaw } = route.query;
+const acceleration: number = Number(accRaw ?? 0) || 0;
+const speed: number = Number(spdRaw ?? 0) || 0;
+const position: number = Number(posRaw ?? 0) || 0;
 
-const getAccClass = (data) => {
+const getAccClass = (data: number): string => {
   if (data >= 0 && data <= 5) return "normal";
   else return "highlight";
 };
 
-const getSpdClass = (data) => {
+const getSpdClass = (data: number): string => {
   if (data >= 0 && data <= 30) return "normal";
   else return "highlight";
 };
 
-const getPosClass = (data) => {
+const getPosClass = (data: number): string => {
   if (data > 0 && data <= 12) return "normal";
   else return "highlight";
 };

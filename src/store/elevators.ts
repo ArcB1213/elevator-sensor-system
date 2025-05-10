@@ -75,7 +75,8 @@ export const useElevatorsStore = defineStore("elevators", {
   },
 });
 
-/*elevator-sensor-system/
+/*
+elevator-sensor-system/
 ├── public/
 │   └── favicon.ico
 ├── src/
@@ -100,4 +101,6 @@ export const useElevatorsStore = defineStore("elevators", {
 │   ├── main.ts
 │   └── index.html
 ├── package.json
-└── tscondig.json */
+├── tscondig.json
+└── webpack.config.js
+ */

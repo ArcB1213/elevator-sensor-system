@@ -1,7 +1,7 @@
 <template>
   <h1>Welcome to the Home Page</h1>
-  <div v-if="user.signStatus">
-    <h2>欢迎，{{ user.username }}！</h2>
+  <div v-if="useUser.isAuthenticated">
+    <h2>欢迎，{{ useUser.user?.username }}！</h2>
   </div>
   <div v-else>
     <h2>请先登录！</h2>
@@ -11,7 +11,7 @@
 <script lang="ts" setup>
 import { useUserStore } from "@/store/user";
 
-const user = useUserStore();
+const useUser = useUserStore();
 </script>
 
 <style scoped>

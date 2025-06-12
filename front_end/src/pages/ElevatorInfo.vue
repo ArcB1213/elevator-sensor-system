@@ -1,5 +1,5 @@
 <template>
-  <div v-if="user.signStatus">
+  <div v-if="user.isAuthenticated">
     <ElevatorList @view-details="switchToDetailView" />
   </div>
   <div v-else>

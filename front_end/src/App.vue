@@ -1,7 +1,18 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useUserStore } from "./store/user";
 
 const user = useUserStore();
+
+// 在组件挂载后初始化
+onMounted(() => {
+  user.initializeAuth()
+  if (user.token) {
+    user.verifyToken().catch(() => {
+      user.clearUserState()
+    })
+  }
+})
 </script>
 
 <template>
@@ -12,7 +23,7 @@ const user = useUserStore();
           <li><router-link to="/" active-class="active">首页</router-link></li>
           <li><router-link to="/ElevatorInfo" active-class="active">电梯信息</router-link></li>
           <li>
-            <span v-if="user.signStatus"
+            <span v-if="user.isAuthenticated"
               ><RouterLink to="/SignOut" active-class="active">登出</RouterLink></span
             >
             <span v-else><RouterLink to="/SignIn" active-class="active">登录</RouterLink></span>

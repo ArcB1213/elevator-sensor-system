@@ -14,15 +14,18 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="elevator in filteredElevators" :key="elevator.id">
+          <tr v-if="loading">
+            <td colspan="5">电梯信息加载中...</td>
+          </tr>
+          <tr v-for="(elevator,index) in filteredElevators" :key="index">
             <td>{{ elevator.id }}</td>
             <td>{{ elevator.name }}</td>
             <td>{{ elevator.location }}</td>
-            <td :class="getStatusClass(elevatorlist.Status[elevator.id - 1])">
-              {{ elevatorlist.Status[elevator.id - 1] }}
+            <td :class="getStatusClass(elevator.status)">
+              {{ elevator.status }}
             </td>
             <td>
-              <button @click="getDetails(elevator.id - 1)">详情</button>
+              <button @click="getDetails(elevator.id)">详情</button>
             </td>
           </tr>
         </tbody>
@@ -32,7 +35,7 @@
     <label for="status">根据状态检索: </label>
     <select v-model="selectedStatus">
       <option value="">全部</option>
-      <option v-for="status in elevatorlist.elevatorStatus" :key="status" :value="status">
+      <option v-for="status in ['正常运行', '警告', '故障']" :key="status" :value="status">
         {{ status }}
       </option>
     </select>
@@ -54,28 +57,46 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { useElevatorsStore } from "@/store/elevators";
+import { ref, computed,onMounted } from "vue";
+import type { Elevator } from "@/interface";
+import {elevatorApi} from "@/api/elevators";
 
-const elevatorlist = useElevatorsStore();
+
+const elevatorList = ref<Elevator[]>([]);
+const loading = ref(false);
+const error = ref('');
 const selectedStatus = ref("");
 const selectedLocation = ref("");
 const emit = defineEmits(["view-details"]);
 
+const loadElevators = async () => {
+  try {
+    loading.value = true
+    error.value = ''
+    const response = await elevatorApi.getElevators()
+    elevatorList.value= response.data;
+  } catch (err: any) {// eslint-disable-line @typescript-eslint/no-explicit-any
+    error.value = err.message
+    console.error('获取电梯列表失败:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
 const uniqueLocations = computed(() => {
-  const locationSet = new Set(elevatorlist.elevators.map((elevator) => elevator.location));
+  const locationSet = new Set(elevatorList.value.map((elevator) => elevator.location));
   return Array.from(locationSet).sort();
 });
 
 //根据状态和位置过滤电梯列表
 const filteredElevators = computed(() => {
   if (!selectedStatus.value && !selectedLocation.value) {
-    return elevatorlist.elevators;
+    return elevatorList.value;
   }
-  return elevatorlist.elevators.filter(
+  return elevatorList.value.filter(
     (elevator) =>
       (selectedStatus.value
-        ? elevatorlist.Status[elevator.id - 1] === selectedStatus.value
+        ? elevator.status === selectedStatus.value
         : true) && (selectedLocation.value ? elevator.location === selectedLocation.value : true)
   );
 });
@@ -83,11 +104,11 @@ const filteredElevators = computed(() => {
 //根据状态决定样式
 const getStatusClass = (status: string) => {
   switch (status) {
-    case elevatorlist.elevatorStatus[0]:
+    case '正常运行':
       return "status-running";
-    case elevatorlist.elevatorStatus[1]:
+    case '警告':
       return "status-warning";
-    case elevatorlist.elevatorStatus[2]:
+    case '故障':
       return "status-error";
     default:
       return "";
@@ -98,6 +119,10 @@ const getStatusClass = (status: string) => {
 const getDetails = (index: number) => {
   emit("view-details", index);
 };
+
+onMounted(() => {
+  loadElevators()
+})
 </script>
 
 <style scoped>
